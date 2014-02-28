@@ -1,0 +1,18 @@
+#!/bin/bash -ex
+
+dl() {
+    [ "$FAB_HTTP_PROXY" ] && PROXY="--proxy $FAB_HTTP_PROXY"
+    cd $2; curl -L -f -O $PROXY $1; cd -
+}
+
+dlfs() {
+    SRC=/usr/local/src
+    dl https://github.com/$1/archive/$2.tar.gz $SRC
+    VERSION=$(echo $2 | sed 's|^v||')
+    mv $SRC/$2.tar.gz $SRC/foodsoft-$3-$VERSION.tar.gz
+}
+
+# download different forks
+dlfs foodcoops/foodsoft v4.0.0 standard
+dlfs foodcoop-adam/foodsoft master adam
+

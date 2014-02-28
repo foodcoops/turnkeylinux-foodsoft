@@ -1,0 +1,82 @@
+#!/bin/sh -ex
+
+SRC=/usr/local/src
+WEBROOT=/var/www/foodsoft
+
+/etc/init.d/mysql start
+
+# get rid of sample app but store database config
+mv $WEBROOT/config/database.yml /tmp/foodsoft_database.yml
+rm -Rf $WEBROOT
+
+# git is linked against gnutls, which can break; this happened for one repository
+# do a slightly different clone to workaround this
+git_clone_workaround() {
+    GEM=$(basename $1 .git)
+    GEMDIR=/usr/local/src/$GEM
+    mkdir -p $GEMDIR
+    cd $GEMDIR
+    git init
+    git remote add origin $1 || true
+    git fetch -q origin
+    for i in `git branch -r | sed 's|^\s*origin/||p;d'`; do git checkout -q $i; done
+    cd -
+}
+git_clone_workaround git://github.com/bcardarella/client_side_validations.git
+
+# for each fork there is a tarball named foodsoft-<fork>-<version>.tar.gz
+# the default version is called foodsoft-standard-<version>.tar.gz
+for TARBALL in $SRC/foodsoft-*.tar.gz; do
+    NAME=$(basename $TARBALL .tar.gz | sed 's|-[^-]*$||')
+    APPROOT=$(dirname $WEBROOT)/$NAME
+
+    # extract application to webroot
+    mkdir -p $APPROOT
+    tar -zxf $TARBALL --strip-components 1 -C $APPROOT 
+    rm -f $TARBALL
+
+    # add database config
+    cp /tmp/foodsoft_database.yml $APPROOT/config/database.yml
+
+    # we probably have a somewhat older Ruby version; make sure Gemfile allows that
+    cd $APPROOT
+    sed -i 's|^\s*ruby |#ruby |' Gemfile
+
+    # disable sharedlists in configuration, we don't use it here
+    # rename key instead of commenting to make it work too when it contains children
+    # (if it's a database.yml label, it may even break deployment)
+    sed -ri 's|^(\s*)(shared_lists:)|\1dont_use_\2|' $APPROOT/config/app_config.yml.SAMPLE
+
+    # do not require ssl, since we start with an untrusted certificate
+    sed -ri 's|^(\s*config\.force_ssl\s*=\s*).*$|\1false|' $APPROOT/config/environments/production.rb
+
+    # workaround gnutls problem
+    sed -ri 's|git://github\.com/bcardarella/client_side_validations\.git|/usr/local/src/client_side_validations|' $APPROOT/Gemfile
+
+    # install dependencies
+    [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
+    bundle install --without test development
+    rake foodsoft:setup:stock_config RAILS_ENV=production
+    unset HTTP_PROXY
+
+    # there is only one default application, setup database for that
+    if [ $NAME = foodsoft-standard ]; then
+        rake db:setup railties:install:migrations db:migrate RAILS_ENV=production
+        ln -s $NAME $WEBROOT
+    fi
+
+    rake assets:precompile RAILS_ENV=production
+
+    # TODO turnkey credit
+
+    # configure permissions
+    chown -R root:www-data $APPROOT
+    chown -R www-data:www-data $APPROOT/tmp
+    chown -R www-data:www-data $APPROOT/log
+
+done
+
+# cleanup
+rm -f /tmp/foodsoft_database.yml
+/etc/init.d/mysql stop
+
