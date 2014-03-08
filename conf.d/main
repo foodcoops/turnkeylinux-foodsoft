@@ -70,11 +70,15 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     # TODO turnkey credit
 
     # configure permissions
+    mkdir -p $APPROOT/tmp/pids
     chown -R root:www-data $APPROOT
     chown -R www-data:www-data $APPROOT/tmp
     chown -R www-data:www-data $APPROOT/log
 
 done
+
+# start foodsoft worker by default
+update-rc.d foodsoft-workers defaults
 
 # cleanup
 rm -f /tmp/foodsoft_database.yml

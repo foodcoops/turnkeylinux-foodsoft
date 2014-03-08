@@ -1,0 +1,48 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          foodsoft-workers
+# Required-Start:    $remote_fs $mysql $redis-server
+# Required-Stop:     $remote_fs $redis-server
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Foodsoft background processes
+# Description:       Start and stop foodsoft background processes, e.g. for sending mails.
+### END INIT INFO
+
+NAME=foodsoft-workers
+USER=www-data
+
+set -e
+. /lib/lsb/init-functions
+
+rake() {
+  su -l "$USER" -c "cd /var/www/foodsoft; rake $@"
+}
+
+case "$1" in
+  start)
+    log_begin_msg "Starting $NAME"
+    rake resque:start_workers
+    log_action_end_msg $?
+    ;;
+
+  stop)
+    log_begin_msg "Stopping $NAME"
+    rake resque:stop_workers
+    log_action_end_msg $?
+    ;;
+
+  restart)
+    log_begin_msg "Restarting $NAME"
+    rake resque:restart_workers
+    log_action_end_msg $?
+    ;;
+
+  *)
+    N=/etc/init.d/$NAME
+    echo "Usage: $N {start|stop|restart}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

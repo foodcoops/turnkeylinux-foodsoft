@@ -89,6 +89,7 @@ def main():
 	    os.symlink(variant, '/var/www/foodsoft')
 	    Popen(['rake db:migrate'], cwd="/var/www/foodsoft", env={"RAILS_ENV": "production"}, shell=True).wait()
 	    Popen(['service', 'apache2', 'restart']).wait()
+	    Popen(['service', 'foodsoft-workers', 'restart']).wait()
 
 
     # initialize admin account from Rails console

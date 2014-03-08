@@ -1,0 +1,12 @@
+#!/bin/sh
+
+USER=www-data
+
+rake() {
+  su -l "$USER" -c "cd /var/www/foodsoft; rake $@"
+}
+
+rake foodsoft:create_upcoming_periodic_tasks \
+     foodsoft:notify_upcoming_tasks \
+     foodsoft:notify_users_of_weekly_task
+
