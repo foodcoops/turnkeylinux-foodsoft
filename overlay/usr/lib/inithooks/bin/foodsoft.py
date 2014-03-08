@@ -72,8 +72,10 @@ def main():
         if 'd' not in locals():
             d = Dialog('TurnKey Linux - First boot configuration')
 
+        # put foodsoft-standard in front of the list
+	variant_avail.insert(0, variant_avail.pop(variant_avail.index('foodsoft-standard')))
+        # and give all of them titles
         choices = map(lambda d: (d, 'Standard version' if d=='foodsoft-standard' else "Derivative '%s'"%d), variant_avail)
-        # TODO add nice descriptions to known choices
 
         variant = d.menu(
             "Foodsoft variant",
