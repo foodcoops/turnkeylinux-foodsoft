@@ -1,8 +1,8 @@
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          foodsoft-workers
-# Required-Start:    $remote_fs $mysql $redis-server
-# Required-Stop:     $remote_fs $redis-server
+# Required-Start:    $remote_fs mysql redis-server
+# Required-Stop:     $remote_fs redis-server
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Foodsoft background processes
