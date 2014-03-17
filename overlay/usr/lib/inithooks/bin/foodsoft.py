@@ -18,6 +18,9 @@ from subprocess import Popen, PIPE
 
 from dialog_wrapper import Dialog
 
+APPS_PATH='/var/www/'
+APP_DEFAULT_PATH=os.path.join(APPS_PATH, 'foodsoft')
+
 def quote(s):
     return "'" + s.replace("'", "\\'") + "'"
 
@@ -27,6 +30,21 @@ def usage(s=None):
     print >> sys.stderr, "Syntax: %s [options]" % sys.argv[0]
     print >> sys.stderr, __doc__
     sys.exit(1)
+
+def foodsoft_variant_desc(variant):
+    desc = ''
+    # figure out name
+    if variant=='foodsoft-standard':
+      desc = 'Standard version'
+    else:
+      desc = "Derivative '%s'" % variant.replace('foodsoft-', '')
+    # append version
+    try:
+        version = open(os.path.join(APPS_PATH, variant, 'VERSION')).read().strip()
+        desc += ' (v%s)' % version
+    except IOError:
+        pass
+    return desc
 
 def main():
     try:
@@ -64,8 +82,8 @@ def main():
             "admin@foodcoop.test")
 
 
-    variant_cur = os.path.basename(os.path.realpath('/var/www/foodsoft'))
-    variant_avail = map(lambda d: os.path.basename(d), glob.glob("/var/www/foodsoft-*"))
+    variant_cur = os.path.basename(os.path.realpath(APP_DEFAULT_PATH))
+    variant_avail = map(lambda d: os.path.basename(d), glob.glob(os.path.join(APPS_PATH, 'foodsoft-*')))
     if len(variant_avail) == 1:
         variant = variant_avail[0]
     elif not variant:
@@ -75,7 +93,7 @@ def main():
         # put foodsoft-standard in front of the list
 	variant_avail.insert(0, variant_avail.pop(variant_avail.index('foodsoft-standard')))
         # and give all of them titles
-        choices = map(lambda d: (d, 'Standard version' if d=='foodsoft-standard' else "Derivative '%s'"%d), variant_avail)
+	choices = map(lambda c: [c, foodsoft_variant_desc(c)], variant_avail)
 
         variant = d.menu(
             "Foodsoft variant",
@@ -87,15 +105,15 @@ def main():
 
     if variant_cur != variant:
 	    # use chosen variant
-	    os.unlink('/var/www/foodsoft')
-	    os.symlink(variant, '/var/www/foodsoft')
-	    Popen(['rake db:migrate'], cwd="/var/www/foodsoft", env={"RAILS_ENV": "production"}, shell=True).wait()
+	    os.unlink(APP_DEFAULT_PATH)
+	    os.symlink(variant, APP_DEFAULT_PATH)
+	    Popen(['rake db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
 	    Popen(['service', 'apache2', 'restart']).wait()
 	    Popen(['service', 'foodsoft-workers', 'restart']).wait()
 
 
     # initialize admin account from Rails console
-    p = Popen(['rails c'], stdin=PIPE, cwd="/var/www/foodsoft", env={"RAILS_ENV": "production"}, shell=True)
+    p = Popen(['rails c'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
     p.stdin.write("u=User.find_by_nick('admin')\n")
     p.stdin.write("u.email="+quote(email)+"\n")
     p.stdin.write("u.password="+quote(password)+"\n")
