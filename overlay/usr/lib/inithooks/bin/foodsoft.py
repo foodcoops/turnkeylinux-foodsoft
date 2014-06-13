@@ -100,6 +100,8 @@ def main():
             "Select which version of Foodsoft you'd like to use.",
             choices=choices)
 
+    print "Please wait ..."
+
     # need mysql running for these updates
     Popen(['service', 'mysql', 'start']).wait()
 
@@ -107,17 +109,16 @@ def main():
 	    # use chosen variant
 	    os.unlink(APP_DEFAULT_PATH)
 	    os.symlink(variant, APP_DEFAULT_PATH)
-	    Popen(['rake db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
+	    Popen(['rake', '-s', 'db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
 	    Popen(['service', 'apache2', 'restart']).wait()
 	    Popen(['service', 'foodsoft-workers', 'restart']).wait()
 
-
     # initialize admin account from Rails console
-    p = Popen(['rails c'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
-    p.stdin.write("u=User.find_by_nick('admin')\n")
-    p.stdin.write("u.email="+quote(email)+"\n")
-    p.stdin.write("u.password="+quote(password)+"\n")
-    p.stdin.write("u.save!\n")
+    p = Popen(['ruby'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
+    p.stdin.write("
+      require_relative 'config/environment'
+      User.find_by_nick('admin').update_attributes email: "+quote(email)+", password: "+quote(password)+"
+    ")
     p.stdin.close()
     p.wait()
 
