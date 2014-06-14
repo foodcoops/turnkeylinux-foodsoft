@@ -103,22 +103,22 @@ def main():
     print "Please wait ..."
 
     # need mysql running for these updates
-    Popen(['service', 'mysql', 'start']).wait()
+    Popen(['service mysql status >/dev/null || service mysql start'], shell=True).wait()
 
     if variant_cur != variant:
 	    # use chosen variant
 	    os.unlink(APP_DEFAULT_PATH)
 	    os.symlink(variant, APP_DEFAULT_PATH)
-	    Popen(['bundle', 'exec', 'rake', '-s', 'db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
-	    Popen(['service', 'apache2', 'restart']).wait()
-	    Popen(['service', 'foodsoft-workers', 'restart']).wait()
+	    Popen('bundle exec /usr/local/bin/rake -s db:migrate', cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
+	    Popen('service apache2 status >/dev/null && service apache2 restart', shell=True).wait()
+	    Popen('service foodsoft-workers restart', shell=True).wait()
 
     # initialize admin account from Rails console
-    p = Popen(['bundle', 'exec', 'ruby'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
-    p.stdin.write("
-      require_relative 'config/environment'
+    p = Popen('bundle exec /usr/bin/ruby', stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
+    p.stdin.write("""
+      require './config/environment'
       User.find_by_nick('admin').update_attributes email: "+quote(email)+", password: "+quote(password)+"
-    ")
+    """)
     p.stdin.close()
     p.wait()
 
