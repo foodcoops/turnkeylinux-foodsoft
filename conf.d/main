@@ -62,6 +62,9 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     # do not require ssl, since we start with an untrusted certificate
     sed -ri 's|^(\s*config\.force_ssl\s*=\s*).*$|\1false|' $APPROOT/config/environments/production.rb
 
+    # use existing MTA with sendmail
+    echo 'Foodsoft::Application.configure { config.action_mailer.delivery_method = :sendmail }' >>$APPROOT/config/environments/production.rb
+
     # workaround gnutls problem
     for c in $GITHUB_CLONE_WORKAROUNDS; do
         fix_git_gemfile $c
