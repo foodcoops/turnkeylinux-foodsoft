@@ -3,26 +3,38 @@
 SRC=/usr/local/src
 WEBROOT=/var/www/foodsoft
 
+# github repositories to use
+GITHUB_CLONE_WORKAROUNDS="bcardarella/client_side_validations fnando/i18n-js greenriver/ice_cube"
+
 /etc/init.d/mysql start
 
 # get rid of sample app but store database config
 mv $WEBROOT/config/database.yml /tmp/foodsoft_database.yml
 rm -Rf $WEBROOT
 
-# git is linked against gnutls, which can break; this happened for one repository
+# git is linked against gnutls, which can break
 # do a slightly different clone to workaround this
-git_clone_workaround() {
-    GEM=$(basename $1 .git)
-    GEMDIR=/usr/local/src/$GEM
+fetch_git_clone() {
+    GEM=$(basename $1)
+    GEMDIR=/usr/local/src/git-${GEM}
+    REPO=git://github.com/$1.git
     mkdir -p $GEMDIR
     cd $GEMDIR
     git init
-    git remote add origin $1 || true
+    git remote add origin $REPO || true
     git fetch -q origin
     for i in `git branch -r | sed 's|^\s*origin/||p;d'`; do git checkout -q $i; done
     cd -
 }
-git_clone_workaround git://github.com/bcardarella/client_side_validations.git
+fix_git_gemfile() {
+    GEM=$(basename $1)
+    GEMDIR=/usr/local/src/git-${GEM}
+    sed -ri "s|git://github\\.com/$1\.git|$GEMDIR|" $APPROOT/Gemfile
+    sed -ri "s|github:\\s*['\"]$1['\"]|git: '$GEMDIR'|" $APPROOT/Gemfile
+}
+for c in $GITHUB_CLONE_WORKAROUNDS; do
+    fetch_git_clone $c
+done
 
 # for each fork there is a tarball named foodsoft-<fork>-<version>.tar.gz
 # the default version is called foodsoft-standard-<version>.tar.gz
@@ -51,7 +63,9 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     sed -ri 's|^(\s*config\.force_ssl\s*=\s*).*$|\1false|' $APPROOT/config/environments/production.rb
 
     # workaround gnutls problem
-    sed -ri 's|git://github\.com/bcardarella/client_side_validations\.git|/usr/local/src/client_side_validations|' $APPROOT/Gemfile
+    for c in $GITHUB_CLONE_WORKAROUNDS; do
+        fix_git_gemfile $c
+    done
 
     # install dependencies
     [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
