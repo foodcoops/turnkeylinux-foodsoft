@@ -67,6 +67,9 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
         fix_git_gemfile $c
     done
 
+    # add TurnkeyLinux credit (when a footer is available)
+    sed -ri 's|^((.*)\.pull-right)|\1= raw ("\&nbsp;on " + link_to("Turnkey Linux", "http://www.turnkeylinux.org"))\n\1|' $APPROOT/app/views/layouts/_footer.html 2>/dev/null || true
+
     # install dependencies
     [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
     bundle install --without test development
@@ -80,8 +83,6 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     fi
 
     bundle exec rake assets:precompile RAILS_ENV=production
-
-    # TODO turnkey credit
 
     # configure permissions
     mkdir -p $APPROOT/tmp/pids
