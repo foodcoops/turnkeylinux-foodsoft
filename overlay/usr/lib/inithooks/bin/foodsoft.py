@@ -117,7 +117,7 @@ def main():
     p = Popen('bundle exec /usr/bin/ruby', stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
     p.stdin.write("""
       require './config/environment'
-      User.find_by_nick('admin').update_attributes email: "+quote(email)+", password: "+quote(password)+"
+      User.find_by_nick('admin').update_attributes email: """+quote(email)+""", password: """+quote(password)+"""
     """)
     p.stdin.close()
     p.wait()
