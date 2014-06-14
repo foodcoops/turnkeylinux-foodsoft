@@ -70,16 +70,16 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     # install dependencies
     [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
     bundle install --without test development
-    rake foodsoft:setup:stock_config RAILS_ENV=production
+    bundle exec rake foodsoft:setup:stock_config RAILS_ENV=production
     unset HTTP_PROXY
 
     # there is only one default application, setup database for that
     if [ $NAME = foodsoft-standard ]; then
-        rake db:setup railties:install:migrations db:migrate RAILS_ENV=production
+        bundle exec rake db:setup railties:install:migrations db:migrate RAILS_ENV=production
         ln -s $NAME $WEBROOT
     fi
 
-    rake assets:precompile RAILS_ENV=production
+    bundle exec rake assets:precompile RAILS_ENV=production
 
     # TODO turnkey credit
 

@@ -109,12 +109,12 @@ def main():
 	    # use chosen variant
 	    os.unlink(APP_DEFAULT_PATH)
 	    os.symlink(variant, APP_DEFAULT_PATH)
-	    Popen(['rake', '-s', 'db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
+	    Popen(['bundle', 'exec', 'rake', '-s', 'db:migrate'], cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
 	    Popen(['service', 'apache2', 'restart']).wait()
 	    Popen(['service', 'foodsoft-workers', 'restart']).wait()
 
     # initialize admin account from Rails console
-    p = Popen(['ruby'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
+    p = Popen(['bundle', 'exec', 'ruby'], stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
     p.stdin.write("
       require_relative 'config/environment'
       User.find_by_nick('admin').update_attributes email: "+quote(email)+", password: "+quote(password)+"

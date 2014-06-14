@@ -3,7 +3,7 @@
 USER=www-data
 
 rake() {
-  su -l "$USER" -c "cd /var/www/foodsoft; rake $@"
+  su -l "$USER" -c "cd /var/www/foodsoft; RAILS_ENV=production bundle exec rake $@"
 }
 
 rake foodsoft:create_upcoming_periodic_tasks \
