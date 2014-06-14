@@ -31,6 +31,14 @@ def usage(s=None):
     print >> sys.stderr, __doc__
     sys.exit(1)
 
+def popen(cmd, **kwargs):
+    kwargs.setdefault('shell', True)
+    kwargs.setdefault('cwd', APP_DEFAULT_PATH)
+    kwargs.setdefault('env', {})
+    kwargs['env'].setdefault('RAILS_ENV', 'production')
+    kwargs['env'].setdefault('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+    return Popen(cmd, **kwargs)
+
 def foodsoft_variant_desc(variant):
     desc = ''
     # figure out name
@@ -103,18 +111,20 @@ def main():
     print "Please wait ..."
 
     # need mysql running for these updates
-    Popen(['service mysql status >/dev/null || service mysql start'], shell=True).wait()
+    popen('service mysql status >/dev/null || service mysql start').wait()
 
     if variant_cur != variant:
 	    # use chosen variant
 	    os.unlink(APP_DEFAULT_PATH)
 	    os.symlink(variant, APP_DEFAULT_PATH)
-	    Popen('bundle exec /usr/local/bin/rake -s db:migrate', cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True).wait()
-	    Popen('service apache2 status >/dev/null && service apache2 restart', shell=True).wait()
-	    Popen('service foodsoft-workers restart', shell=True).wait()
+            # since we switched directory, we may need to regenerate the secret key; also restarts webapp
+	    popen('/usr/lib/inithooks/firstboot.d/20regen-rails-secrets').wait()
+	    popen('bundle exec rake -s db:migrate').wait()
+	    popen('service apache2 status >/dev/null && service apache2 restart').wait()
+	    popen('service foodsoft-workers status >/dev/null && service foodsoft-workers restart').wait()
 
     # initialize admin account from Rails console
-    p = Popen('bundle exec /usr/bin/ruby', stdin=PIPE, cwd=APP_DEFAULT_PATH, env={"RAILS_ENV": "production"}, shell=True)
+    p = popen('bundle exec ruby', stdin=PIPE)
     p.stdin.write("""
       require './config/environment'
       User.find_by_nick('admin').update_attributes email: """+quote(email)+""", password: """+quote(password)+"""
