@@ -2,3 +2,4 @@
 #include <turnkey/rails>
 
 redis-server
+libicu-dev
