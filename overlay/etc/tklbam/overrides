@@ -1,0 +1,9 @@
+# Rails files that don't contain key data
+-/var/www/*/log
+-/var/www/*/tmp
+
+# Files that may change after a version update but can be regenerated.
+#   Notably db/schema.rb may change after rake db:migrate, which happens
+#   as part of selecting a different Foodsoft version.
+-/var/www/*/db/schema.rb
+-/var/www/*/public/assets
