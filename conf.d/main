@@ -39,7 +39,7 @@ done
 # for each fork there is a tarball named foodsoft-<fork>-<version>.tar.gz
 # the default version is called foodsoft-standard-<version>.tar.gz
 for TARBALL in $SRC/foodsoft-*.tar.gz; do
-    NAME=$(basename $TARBALL .tar.gz | sed 's|-[^-]*$||')
+    NAME=$(basename $TARBALL .tar.gz | sed -r 's|-v?[0-9]+\.[0-9]+.*$||')
     APPROOT=$(dirname $WEBROOT)/$NAME
 
     # extract application to webroot
