@@ -39,7 +39,7 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     echo 'Foodsoft::Application.configure { config.action_mailer.delivery_method = :sendmail }' >>$APPROOT/config/environments/production.rb
 
     # add TurnkeyLinux credit (when a footer is available)
-    sed -ri 's|^((.*)\.pull-right)|\1= raw ("\&nbsp;on " + link_to("Turnkey Linux", "http://www.turnkeylinux.org"))\n\1|' $APPROOT/app/views/layouts/_footer.html 2>/dev/null || true
+    sed -ri 's|^((.*)\.pull-right)|\1= raw ("\&nbsp;on " + link_to("Turnkey Linux", "http://www.turnkeylinux.org"))\n\1|' $APPROOT/app/views/layouts/_footer.html.haml 2>/dev/null || true
 
     # install dependencies
     [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
