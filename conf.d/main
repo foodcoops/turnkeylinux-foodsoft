@@ -3,38 +3,11 @@
 SRC=/usr/local/src
 WEBROOT=/var/www/foodsoft
 
-# github repositories to use
-GITHUB_CLONE_WORKAROUNDS="bcardarella/client_side_validations fnando/i18n-js greenriver/ice_cube"
-
 /etc/init.d/mysql start
 
 # get rid of sample app but store database config
 mv $WEBROOT/config/database.yml /tmp/foodsoft_database.yml
 rm -Rf $WEBROOT
-
-# git is linked against gnutls, which can break
-# do a slightly different clone to workaround this
-fetch_git_clone() {
-    GEM=$(basename $1)
-    GEMDIR=/usr/local/src/git-${GEM}
-    REPO=git://github.com/$1.git
-    mkdir -p $GEMDIR
-    cd $GEMDIR
-    git init
-    git remote add origin $REPO || true
-    git fetch -q origin
-    for i in `git branch -r | sed 's|^\s*origin/||p;d'`; do git checkout -q $i; done
-    cd -
-}
-fix_git_gemfile() {
-    GEM=$(basename $1)
-    GEMDIR=/usr/local/src/git-${GEM}
-    sed -ri "s|git://github\\.com/$1\.git|$GEMDIR|" $APPROOT/Gemfile
-    sed -ri "s|github:\\s*['\"]$1['\"]|git: '$GEMDIR'|" $APPROOT/Gemfile
-}
-for c in $GITHUB_CLONE_WORKAROUNDS; do
-    fetch_git_clone $c
-done
 
 # for each fork there is a tarball named foodsoft-<fork>-<version>.tar.gz
 # the default version is called foodsoft-standard-<version>.tar.gz
@@ -64,11 +37,6 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
 
     # use existing MTA with sendmail
     echo 'Foodsoft::Application.configure { config.action_mailer.delivery_method = :sendmail }' >>$APPROOT/config/environments/production.rb
-
-    # workaround gnutls problem
-    for c in $GITHUB_CLONE_WORKAROUNDS; do
-        fix_git_gemfile $c
-    done
 
     # add TurnkeyLinux credit (when a footer is available)
     sed -ri 's|^((.*)\.pull-right)|\1= raw ("\&nbsp;on " + link_to("Turnkey Linux", "http://www.turnkeylinux.org"))\n\1|' $APPROOT/app/views/layouts/_footer.html 2>/dev/null || true
