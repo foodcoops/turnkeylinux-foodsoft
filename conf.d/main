@@ -45,6 +45,7 @@ for TARBALL in $SRC/foodsoft-*.tar.gz; do
     [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
     bundle install --without test development
     bundle exec rake foodsoft:setup:stock_config RAILS_ENV=production
+    bundle exec whenever --user www-data --write-crontab
     unset HTTP_PROXY
 
     # there is only one default application, setup database for that
