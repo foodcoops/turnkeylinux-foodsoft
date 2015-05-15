@@ -16,7 +16,6 @@ Core`_, and on top of that:
 - Two versions: standard and foodcoop-adam (choose on first boot).
 - SSL support out of the box.
 - Includes Phusion Passenger for Apache web server (mod_rails).
-- Uses Ruby Enterprise (performance).
 - Postfix MTA (bound to localhost) to allow sending of email (e.g.,
   password recovery).
 - Webmin modules for configuring Apache2, MySQL and Postfix.
