@@ -3,3 +3,7 @@
 
 redis-server
 libicu-dev
+
+imagemagick
+libmagickcore-dev
+libmagickwand-dev
