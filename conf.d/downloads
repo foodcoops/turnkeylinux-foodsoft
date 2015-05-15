@@ -13,6 +13,6 @@ dlfs() {
 }
 
 # download different forks
-dlfs foodcoops/foodsoft       v4.3.0        standard
-dlfs foodcoop-adam/foodsoft   v3.3.6-adam   adam
+dlfs foodcoops/foodsoft       v4.4.0        standard
+dlfs foodcoop-adam/foodsoft   v3.3.7-adam   adam
 
