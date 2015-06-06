@@ -117,9 +117,11 @@ def main():
 	    # use chosen variant
 	    os.unlink(APP_DEFAULT_PATH)
 	    os.symlink(variant, APP_DEFAULT_PATH)
-            # since we switched directory, we may need to regenerate the secret key; also restarts webapp
+	    # since we switched directory, we may need to regenerate the secret key; also restarts webapp
 	    popen('/usr/lib/inithooks/firstboot.d/20regen-rails-secrets').wait()
 	    popen('bundle exec rake -s db:migrate').wait()
+	    popen('bundle exec whenever --user www-data --write-crontab').wait()
+	    popen('chown -R www-data:www-data tmp/').wait() # rake/whenever may have cached classes
 	    popen('service apache2 status >/dev/null && service apache2 restart').wait()
 	    popen('service foodsoft-workers status >/dev/null && service foodsoft-workers restart').wait()
 
