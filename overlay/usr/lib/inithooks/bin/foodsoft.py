@@ -87,7 +87,7 @@ def main():
         email = d.get_email(
             "Foodsoft Email",
             "Enter email address for the Foodsoft 'admin' account.",
-            "admin@foodcoop.test")
+            "admin@example.com")
 
 
     variant_cur = os.path.basename(os.path.realpath(APP_DEFAULT_PATH))
