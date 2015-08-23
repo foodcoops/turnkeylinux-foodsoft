@@ -12,6 +12,7 @@ import os
 import sys
 import glob
 import getopt
+import inithooks_cache
 import string
 import subprocess
 from subprocess import Popen, PIPE
@@ -88,6 +89,8 @@ def main():
             "Foodsoft Email",
             "Enter email address for the Foodsoft 'admin' account.",
             "admin@example.com")
+
+    inithooks_cache.write('APP_EMAIL', email)
 
 
     variant_cur = os.path.basename(os.path.realpath(APP_DEFAULT_PATH))
