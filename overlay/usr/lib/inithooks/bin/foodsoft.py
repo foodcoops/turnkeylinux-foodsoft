@@ -5,6 +5,7 @@ Option:
     --pass=     unless provided, will ask interactively
     --email=    unless provided, will ask interactively
     --variant=  unless provided, will ask interactively
+                DEFAULT=foodsoft-standard
 
 """
 
@@ -21,6 +22,7 @@ from dialog_wrapper import Dialog
 
 APPS_PATH='/var/www/'
 APP_DEFAULT_PATH=os.path.join(APPS_PATH, 'foodsoft')
+DEFAULT_VARIANT='foodsoft-standard'
 
 def quote(s):
     return "'" + s.replace("'", "\\'") + "'"
@@ -92,6 +94,8 @@ def main():
 
     inithooks_cache.write('APP_EMAIL', email)
 
+    if variant == "DEFAULT":
+        variant = DEFAULT_VARIANT
 
     variant_cur = os.path.basename(os.path.realpath(APP_DEFAULT_PATH))
     variant_avail = map(lambda d: os.path.basename(d), glob.glob(os.path.join(APPS_PATH, 'foodsoft-*')))

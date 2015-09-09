@@ -1,8 +1,16 @@
 #!/bin/bash -e
-# set foodsoft admin password and email
+# set foodsoft admin password, email and variant
 
 . /etc/default/inithooks
-
 [ -e $INITHOOKS_CONF ] && . $INITHOOKS_CONF
-$INITHOOKS_PATH/bin/foodsoft.py --pass="$APP_PASS" --email="$APP_EMAIL"
+
+# support partially preseeded headless deployments
+if [ -z "$APP_VARIANT" ]; then
+    if [ -n "$APP_PASS" ] && [ -n "$APP_EMAIL" ]; then
+        APP_VARIANT="DEFAULT"
+    fi
+fi
+
+$INITHOOKS_PATH/bin/foodsoft.py \
+    --pass="$APP_PASS" --email="$APP_EMAIL" --variant="$APP_VARIANT"
 
