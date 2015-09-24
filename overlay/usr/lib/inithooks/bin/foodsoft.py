@@ -128,7 +128,6 @@ def main():
 	    popen('/usr/lib/inithooks/firstboot.d/20regen-rails-secrets').wait()
 	    popen('bundle exec rake -s db:migrate').wait()
 	    popen('bundle exec whenever --user www-data --write-crontab').wait()
-	    popen('chown -R www-data:www-data tmp/').wait() # rake/whenever may have cached classes
 	    popen('service apache2 status >/dev/null && service apache2 restart').wait()
 	    popen('service foodsoft-workers status >/dev/null && service foodsoft-workers restart').wait()
 
@@ -140,6 +139,8 @@ def main():
     """)
     p.stdin.close()
     p.wait()
+    # running as root may have cached classes
+    popen('chown -R www-data:www-data tmp/').wait()
 
 
 if __name__ == "__main__":
