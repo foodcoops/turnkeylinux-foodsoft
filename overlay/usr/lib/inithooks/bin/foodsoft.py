@@ -106,9 +106,9 @@ def main():
             d = Dialog('TurnKey Linux - First boot configuration')
 
         # put foodsoft-standard in front of the list
-	variant_avail.insert(0, variant_avail.pop(variant_avail.index('foodsoft-standard')))
+        variant_avail.insert(0, variant_avail.pop(variant_avail.index('foodsoft-standard')))
         # and give all of them titles
-	choices = map(lambda c: [c, foodsoft_variant_desc(c)], variant_avail)
+        choices = map(lambda c: [c, foodsoft_variant_desc(c)], variant_avail)
 
         variant = d.menu(
             "Foodsoft variant",
