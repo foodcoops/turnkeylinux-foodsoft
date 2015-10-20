@@ -16,7 +16,7 @@ set -e
 . /lib/lsb/init-functions
 
 rake() {
-  su -l "$USER" -c "cd /var/www/foodsoft; RAILS_ENV=production bundle exec rake $@"
+  su -l "$USER" -s "/bin/sh" -c "cd /var/www/foodsoft; RAILS_ENV=production bundle exec rake $@"
 }
 
 case "$1" in
