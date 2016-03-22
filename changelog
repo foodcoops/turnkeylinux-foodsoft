@@ -1,5 +1,7 @@
 turnkey-foodsoft-14.1 (1) turnkey; urgency=low
 
+  * Improved regen-rails-secrets inithook [#591].
+
   * Installed security updates.
 
   * Installed updated packages from TurnKey repo
